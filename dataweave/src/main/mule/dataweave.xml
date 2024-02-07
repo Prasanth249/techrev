@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="37695281-0877-4863-9f53-613d1afce30d" >
+		<http:listener-connection host="0.0.0.0" port="8085" />
+	</http:listener-config>
+	<flow name="dataweaveFlow" doc:id="a4d6e5ad-09c5-4174-8600-afa3429b3184" >
+		<http:listener doc:name="Listener" doc:id="cf4ef361-f42a-4605-83dd-e3bf75eb604a" config-ref="HTTP_Listener_config" path="/dataweaveTest"/>
+		<ee:transform doc:name="Transform Message" doc:id="4999143c-372c-4943-9118-e78cd14aec09" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+{
+	message: Mule::lookup("sample", "helloo how are you")
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Transform Message" doc:id="e8e7d564-f31d-434e-bb0d-47df26fe07e8" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+
+output application/json
+---
+"hii " ++ payload.name ++ " your company name is " ++ attributes.queryParams.org]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="reduce" doc:id="88ec848e-4198-42d9-984f-98a2a4180793">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+
+var a = [{
+	"name": " sai",
+	"id": 1,
+	"org": "TechRev-Solutions"
+},
+{
+	"name": " nikki",
+	"id": 2,
+	"org": "TechRev-Solutions"
+},
+{
+	"name": "prasanth",
+	"id": 3,
+	"org": "TechRev"
+}]
+
+output application/json
+---
+// The reduce will combine entire array into single array
+a reduce($  ++ $$)
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="mapObject" doc:id="5fca9c25-82ed-4576-8581-b1d29b489765">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+
+var  a = {
+	name: "nikku",
+	id: 4,
+	org: "mulesoft",
+	value: null
+}
+output application/Json
+---
+a mapObject ((value, key, index) ->{
+	"user details " : value,
+	"index ": index,	
+	"The value is " : (value default " ")
+	
+} )]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="map" doc:id="68cbc3f4-024a-4181-ac7b-719c7ca5ef35">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+var a = [{
+	"name": " sai",
+	"id": 1,
+	"org": ["TechRev-Solutions", "mulesoft", "tcs"]
+},
+{
+	"name": " nikki",
+	"id": 2,
+	"org": ["TechRev-Solutions", "mulesoft"]
+},
+{
+	"name": "prasanth",
+	"id": 3,
+	"org": ["TechRev", "tcs"]
+}]
+output application/json
+---
+//a map{
+//	"customerName": $.name,
+//	"company": $.org,
+//	"uniqueId": $.name ++ "-" ++$.id ++"-"++ $.org,
+// 	"Your position is ": $$
+//}
+
+a map((item, index) -> {
+	"customerName": item.name,
+	"companys": item.org map {
+		"Employee-name": item.name,
+		"first-company": $
+		}
+		,
+	"uniqueId": item.name ++ "-" ++ item.id,
+ 	"Your position is ": index
+})
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="pluck" doc:id="d668181e-6a5e-450a-aa56-afe3cc8c9008" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+
+var a = 
+{
+	"name": "prasanth",
+	"id": 3,
+	"org": "TechRev"
+}
+
+output application/json
+---
+
+a pluck (value, key, index) ->{
+	"what is value ": value
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="dataweaveFlow2" doc:id="3570b5b3-d0f3-4e34-a3fe-02f4d906aa62" >
+		<ee:transform doc:name="sample" doc:id="ad4b5262-2f9d-4ddc-b681-035023b9bba9" >
+			<ee:message >
+				<ee:set-payload ><![CDATA["In the sample" ++ payload as String
+
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="dataweaveFlow1" doc:id="b8a7bf2a-9c3e-4f51-9276-8e35e1992831" >
+		<ee:transform doc:name="flatten" doc:id="cf7c2569-9a69-4d5e-b77e-7a18f48a1179" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var a = [{
+	"name": " sai",
+	"id": 1,
+	"org": "TechRev-Solutions"
+},
+{
+	"name": " nikki",
+	"id": 2,
+	"org": "TechRev-Solutions"
+},
+{
+	"name": "prasanth",
+	"id": 3,
+	"org": "TechRev"
+}]
+
+var b  = [{
+	"name": " sai",
+	"id": 1,
+	"org": "TechRev-Solutions"
+},
+{
+	"name": " nikki",
+	"id": 2,
+	"org": "TechRev-Solutions"
+},
+{
+	"name": "prasanth",
+	"id": 3,
+	"org": "TechRev"
+}]
+
+
+---
+flatten(( a map upper($.name)) + (b map upper($.name) ))
+
+
+
+
+
+
+
+
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="function" doc:id="3c6e0a41-5bc9-4ae9-8e0a-9d59dce9fd8f" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var a = [{
+	"name": " sai",
+	"id": 1,
+	"maths": 25,
+	"physics": 56,
+	"english": 72
+},
+{
+	"name": " nikki",
+	"id": 2,
+	"maths": 25,
+	"physics": 56,
+	"english": 72},
+{
+	"name": "prasanth",
+	"id": 3,
+	"maths": 25,
+	"physics": 56,
+	"english": 72
+}]
+fun checkResult(marks) = if(marks > 50 ) "pass" else "fail"
+---
+
+
+
+a map {
+	"condidate": $.name,
+	"rollNo": $.id,
+	"subjectwiseDetails":{
+		"maths":{marks: $.maths, status: checkResult($.maths)},
+		"physics": {marks: $.physics, status: checkResult($.physics)},
+		"english": {marks: $.english, status: checkResult($.english)}
+	}
+}
+
+
+
+
+
+
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>
