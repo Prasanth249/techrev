@@ -23,5 +23,5 @@ jobs:
           cache: maven
       - name: Build with Maven in the 'githubActions' directory
         run: |
-          cd githubActions  
+          cd githubActions  # Change into the 'githubActions' directory
           mvn clean install
